@@ -1,5 +1,4 @@
 import { body, validationResult } from "express-validator";
-import bcrypt from "bcrypt";
 import User from "../../models/user.js";
 
 export const users_index_get = async (req, res) => {

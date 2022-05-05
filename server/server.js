@@ -4,13 +4,15 @@ import passport from "./passport.js";
 import cors from "cors";
 import path from "path";
 import APIRouter from "./routes/api/index.js";
-// import bodyParser from "body-parser";
+import bodyParser from "body-parser";
 
 // const __dirname = path.resolve();
 
 const app = express();
-// app.use(bodyParser.json());
-// app.use(bodyParser.urlencoded({ extended: true }));
+
+// bodyParser - needed for passportLocal
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // app.use(express.static(path.join(__dirname, "./client/build")));
 // app.use(express.static(path.resolve(__dirname, "./build")));
