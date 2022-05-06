@@ -2,15 +2,12 @@
 import APIRouter from "../routes/api/index.js";
 import request from "supertest";
 import express from "express";
+import mongoose from "../mongoDB.js";
 
 const app = express();
 
 app.use(express.urlencoded({ extended: false }));
 app.use("/", APIRouter);
-
-// app.get("/user", function (req, res) {
-// 	res.status(200).json({ name: "john" });
-// });
 
 test("index/api/get route works", (done) => {
 	request(app)

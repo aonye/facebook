@@ -21,9 +21,7 @@ loginRouter.post("/", (req, res) => {
 			const userInfo = {
 				id: user._id.toString(),
 			};
-			const token = jwt.sign(userInfo, process.env.SECRET, {
-				expiresIn: "1d",
-			});
+			const token = jwt.sign(userInfo, process.env.SECRET, {});
 			return res.json({ token });
 		});
 	})(req, res);

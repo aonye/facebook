@@ -1,14 +1,15 @@
 /* eslint-disable no-undef */
-import commentRouter from "../routes/api/comments.js";
+import postRouter from "../routes/api/posts.js";
 import request from "supertest";
 import express from "express";
+import mongoose from "../mongoDB.js";
 
 const app = express();
 
 app.use(express.urlencoded({ extended: false }));
-app.use("/", commentRouter);
+app.use("/", postRouter);
 
-const getPostsJSON = [
+const getAllPostsJSON = [
 	{
 		_id: "626f0e7710400b7982748790",
 		author: {
@@ -66,11 +67,11 @@ const getPostsJSON = [
 	},
 ];
 
-test("index/api/get route works", (done) => {
+test("posts/get route works", (done) => {
 	request(app)
 		.get("/")
 		.expect("Content-Type", /json/)
-		.expect(getPostsJSON)
+		.expect(getAllPostsJSON)
 		.expect(200, done);
 });
 
