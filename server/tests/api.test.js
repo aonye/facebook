@@ -2,7 +2,6 @@
 import APIRouter from "../routes/api/index.js";
 import request from "supertest";
 import express from "express";
-import mongoose from "../mongoDB.js";
 
 const app = express();
 

@@ -2,16 +2,28 @@
 import postRouter from "../routes/api/posts.js";
 import request from "supertest";
 import express from "express";
-import mongoose from "../mongoDB.js";
+import { initializeMongoServer, stopServer } from "../mongoConfigTesting.js";
+import { populateUser, getTokenFromUser } from "./populateUser.js";
 
 const app = express();
 
 app.use(express.urlencoded({ extended: false }));
 app.use("/", postRouter);
 
-//last updated 05/11
-const token =
-	"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjYyMTJhNzgwOTE5YzA3NTA5OTQ5MzAwOSIsImlhdCI6MTY1MjMxMDI4MywiZXhwIjoxNjUyMzk2NjgzfQ.r3jNiQEfP5T8pQJzR0725cBifyoA8MQwux2VTSPbfLs";
+let token;
+
+beforeAll(async () => {
+	await initializeMongoServer();
+	await populateUser();
+	token = await getTokenFromUser();
+	await request(app)
+		.post("/")
+		.auth(token, { type: "bearer" })
+		.send("title=deleting this")
+		.send("post=deleting this post")
+		.send("published=false")
+		.expect(200);
+});
 
 const getAllPostsJSON = [
 	{
@@ -97,15 +109,19 @@ test("posts/GET route works", (done) => {
 		.expect(200, done);
 });
 
-test("posts/GET/:postId route works", (done) => {
-	const postID = "626f0e7710400b7982748792";
-	request(app)
-		.get(`/${postID}`)
-		.set("Authorization", "bearer " + token)
-		.expect("Content-Type", /json/)
-		.expect(getPostByID)
-		.expect(200, done);
-});
+// stopServer();
+
+// test("posts/GET/:postId route works", (done) => {
+// 	const postID = "626f0e7710400b7982748792";
+// 	request(app)
+// 		.get(`/${postID}`)
+// 		.set("Authorization", "bearer " + token)
+// 		.expect("Content-Type", /json/)
+// 		.expect(getPostByID)
+// 		.expect(200, done);
+// });
+
+// stopServer();
 
 // test("posts/POST route works", (done) => {
 // 	request(app)

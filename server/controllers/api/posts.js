@@ -76,15 +76,18 @@ export const post_post = [
 		}
 
 		const userID = getUserIDFromJWT(req.headers.authorization);
-
 		if (!userID) {
 			return res.status(400).json({ msg: "No userID found" });
 		}
 
 		const user = await User.findById(userID);
-
 		if (!user) {
 			return res.status(400).json({ msg: "No user found" });
+		}
+
+		let id = req.body.setID;
+		if (id.length !== 24) {
+			id = undefined;
 		}
 
 		// New post
@@ -95,6 +98,7 @@ export const post_post = [
 			post: req.body.post,
 			published: req.body.published === "true",
 			comments: [],
+			id_: id,
 		});
 
 		post.save((err) => {

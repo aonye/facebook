@@ -21,7 +21,8 @@ loginRouter.post("/", (req, res) => {
 			const userInfo = {
 				id: user._id.toString(),
 			};
-			const token = jwt.sign(userInfo, process.env.SECRET, {});
+			console.log(process.env.SECRET, "secret");
+			const token = jwt.sign(userInfo, "TURTLES", {});
 			return res.json({ token });
 		});
 	})(req, res);

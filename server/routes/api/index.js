@@ -8,11 +8,7 @@ import loginRouter from "./login.js";
 
 const APIRouter = Router();
 
-APIRouter.use(
-	"/users",
-	passport.authenticate("jwt", { session: false }),
-	userRouter
-);
+APIRouter.use("/users", userRouter);
 
 // Route level auth
 APIRouter.use("/posts", postRouter);
