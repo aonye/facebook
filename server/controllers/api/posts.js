@@ -13,8 +13,7 @@ export const posts_index_get = async (req, res) => {
 				path: "author",
 				model: "User",
 			},
-		})
-		.populate();
+		});
 	return posts === null
 		? res.status(400).json({ error: "Cannot find posts" })
 		: posts.length === 0
@@ -37,6 +36,7 @@ export const posts_user_index_get = async (req, res) => {
 				model: "User",
 			},
 		});
+	console.log(post);
 	return post === null
 		? res.status(400).json({ error: "Cannot find posts" })
 		: post.length === 0
@@ -45,10 +45,18 @@ export const posts_user_index_get = async (req, res) => {
 };
 
 export const post_get = async (req, res) => {
-	const post = await Post.findById(req.params.postId);
-	return post
-		? res.json(post)
-		: res.status(404).json({ error: "Post not found" });
+	const post = await Post.findById(req.params.postId)
+		.populate("author")
+		.populate({
+			path: "comments",
+			populate: {
+				path: "author",
+				model: "User",
+			},
+		});
+	return post === null
+		? res.status(400).json({ error: "Cannot find post" })
+		: res.json(post);
 };
 
 export const post_post = [

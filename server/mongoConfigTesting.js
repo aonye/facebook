@@ -3,7 +3,7 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 
 const mongoServer = await MongoMemoryServer.create();
 
-async function initializeMongoServer() {
+function initializeMongoServer() {
 	const mongoUri = mongoServer.getUri();
 
 	mongoose.connect(mongoUri);
@@ -21,8 +21,7 @@ async function initializeMongoServer() {
 	});
 }
 
-async function stopServer() {
-	await mongoServer.stop();
-	console.log("stopped server");
+function stopServer() {
+	mongoServer.stop();
 }
 export { initializeMongoServer, stopServer };

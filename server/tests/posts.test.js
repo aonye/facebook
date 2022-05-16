@@ -3,7 +3,8 @@ import postRouter from "../routes/api/posts.js";
 import request from "supertest";
 import express from "express";
 import { initializeMongoServer, stopServer } from "../mongoConfigTesting.js";
-import { populateUser, getTokenFromUser } from "./populateUser.js";
+import { getTokenFromUser } from "./populateUser.js";
+import { populate } from "./populateDBTesting.js";
 
 const app = express();
 
@@ -13,38 +14,36 @@ app.use("/", postRouter);
 let token;
 
 beforeAll(async () => {
-	await initializeMongoServer();
-	await populateUser();
+	initializeMongoServer();
+	await populate();
 	token = await getTokenFromUser();
-	await request(app)
-		.post("/")
-		.auth(token, { type: "bearer" })
-		.send("title=deleting this")
-		.send("post=deleting this post")
-		.send("published=false")
-		.expect(200);
+	console.log(token);
 });
 
-const getAllPostsJSON = [
+afterAll(async () => {
+	stopServer();
+});
+
+const expectedAllPosts = [
 	{
 		_id: "626f0e7710400b7982748790",
 		author: {
 			_id: "626f0e7610400b7982748786",
 			username: "elonmusk@tesla.com",
-			password: "tesla",
+			password: "teslamotors",
 			__v: 0,
 		},
-		title: "test title3",
+		title: "test title 1",
 		timestamp: "2000-01-01T00:00:00.000Z",
-		post: "Lorem ipsum",
+		post: "Lorem ipsum, Lorem ipsum, Lorem ipsum",
 		published: true,
 		comments: [
 			{
-				_id: "626f0e7710400b798274878c",
+				_id: "62817209b96ad77c3f084866",
 				author: {
 					_id: "626f0e7610400b7982748787",
-					username: "b@b.com",
-					password: "b",
+					username: "aaaaaa@aaaaaa.com",
+					password: "aaaaaa",
 					__v: 0,
 				},
 				text: "Wowwwwwwwww",
@@ -52,11 +51,11 @@ const getAllPostsJSON = [
 				__v: 0,
 			},
 			{
-				_id: "626f0e7710400b798274878e",
+				_id: "62817209b96ad77c3f084868",
 				author: {
-					_id: "626f0e7610400b7982748787",
-					username: "b@b.com",
-					password: "b",
+					_id: "626f0e7610400b7982748788",
+					username: "bbbbbb@bbbbbb.com",
+					password: "bbbbbb",
 					__v: 0,
 				},
 				text: "GreatJob",
@@ -67,29 +66,11 @@ const getAllPostsJSON = [
 		__v: 0,
 	},
 	{
-		_id: "626f0e7710400b7982748792",
+		_id: "626f0e7710400b7982748791",
 		author: {
 			_id: "626f0e7610400b7982748786",
 			username: "elonmusk@tesla.com",
-			password: "tesla",
-			__v: 0,
-		},
-		title: "test title 2",
-		timestamp: "2020-01-01T00:00:00.000Z",
-		post: "Hello world",
-		published: true,
-		comments: [],
-		__v: 0,
-	},
-];
-
-const getPostByID = [
-	{
-		_id: "626f0e7710400b7982748792",
-		author: {
-			_id: "626f0e7610400b7982748786",
-			username: "elonmusk@tesla.com",
-			password: "tesla",
+			password: "teslamotors",
 			__v: 0,
 		},
 		title: "test title 2",
@@ -105,23 +86,60 @@ test("posts/GET route works", (done) => {
 	request(app)
 		.get("/")
 		.expect("Content-Type", /json/)
-		.expect(getAllPostsJSON)
+		.expect(expectedAllPosts)
 		.expect(200, done);
 });
 
-// stopServer();
+const getPostByID = {
+	_id: "626f0e7710400b7982748790",
+	author: {
+		_id: "626f0e7610400b7982748786",
+		username: "elonmusk@tesla.com",
+		password: "teslamotors",
+		__v: 0,
+	},
+	title: "test title 1",
+	timestamp: "2000-01-01T00:00:00.000Z",
+	post: "Lorem ipsum, Lorem ipsum, Lorem ipsum",
+	published: true,
+	comments: [
+		{
+			_id: "62817209b96ad77c3f084866",
+			author: {
+				_id: "626f0e7610400b7982748787",
+				username: "aaaaaa@aaaaaa.com",
+				password: "aaaaaa",
+				__v: 0,
+			},
+			text: "Wowwwwwwwww",
+			timestamp: "2000-01-02T00:00:00.000Z",
+			__v: 0,
+		},
+		{
+			_id: "62817209b96ad77c3f084868",
+			author: {
+				_id: "626f0e7610400b7982748788",
+				username: "bbbbbb@bbbbbb.com",
+				password: "bbbbbb",
+				__v: 0,
+			},
+			text: "GreatJob",
+			timestamp: "2000-01-03T00:00:00.000Z",
+			__v: 0,
+		},
+	],
+	__v: 0,
+};
 
-// test("posts/GET/:postId route works", (done) => {
-// 	const postID = "626f0e7710400b7982748792";
-// 	request(app)
-// 		.get(`/${postID}`)
-// 		.set("Authorization", "bearer " + token)
-// 		.expect("Content-Type", /json/)
-// 		.expect(getPostByID)
-// 		.expect(200, done);
-// });
-
-// stopServer();
+test("posts/GET/:postId route works", (done) => {
+	const postID = "626f0e7710400b7982748790";
+	request(app)
+		.get(`/` + postID)
+		.set("Authorization", "bearer " + token)
+		.expect("Content-Type", /json/)
+		.expect(getPostByID)
+		.expect(200, done);
+});
 
 // test("posts/POST route works", (done) => {
 // 	request(app)
