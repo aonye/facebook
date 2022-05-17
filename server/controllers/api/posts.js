@@ -36,7 +36,6 @@ export const posts_user_index_get = async (req, res) => {
 				model: "User",
 			},
 		});
-	console.log(post);
 	return post === null
 		? res.status(400).json({ error: "Cannot find posts" })
 		: post.length === 0
@@ -93,11 +92,6 @@ export const post_post = [
 			return res.status(400).json({ msg: "No user found" });
 		}
 
-		let id = req.body.setID;
-		if (id.length !== 24) {
-			id = undefined;
-		}
-
 		// New post
 		const post = new Post({
 			author: user,
@@ -106,8 +100,15 @@ export const post_post = [
 			post: req.body.post,
 			published: req.body.published === "true",
 			comments: [],
-			id_: id,
 		});
+
+		if (req.body.setID && req.body.setID.length === 24) {
+			post._id = req.body.setID;
+		}
+
+		if (req.body.timestamp) {
+			post.timestamp = req.body.timestamp;
+		}
 
 		post.save((err) => {
 			if (err) {

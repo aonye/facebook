@@ -1,7 +1,7 @@
-/* eslint-disable no-undef */
 import postRouter from "../routes/api/posts.js";
 import request from "supertest";
 import express from "express";
+import { beforeAll, afterAll, test } from "@jest/globals";
 import { initializeMongoServer, stopServer } from "../mongoConfigTesting.js";
 import { getTokenFromUser } from "./populateUser.js";
 import { populate } from "./populateDBTesting.js";
@@ -82,7 +82,7 @@ const expectedAllPosts = [
 	},
 ];
 
-test("posts/GET route works", (done) => {
+test("posts/GET all route", (done) => {
 	request(app)
 		.get("/")
 		.expect("Content-Type", /json/)
@@ -131,24 +131,74 @@ const getPostByID = {
 	__v: 0,
 };
 
-test("posts/GET/:postId route works", (done) => {
+test("posts/GET/:postId route", (done) => {
 	const postID = "626f0e7710400b7982748790";
 	request(app)
 		.get(`/` + postID)
-		.set("Authorization", "bearer " + token)
+		.set("Authorization", "Bearer " + token)
 		.expect("Content-Type", /json/)
 		.expect(getPostByID)
 		.expect(200, done);
 });
 
-// test("posts/POST route works", (done) => {
-// 	request(app)
-// 		.post("/test")
-// 		.type("form")
-// 		.send({ item: "hey" })
-// 		.then(() => {
-// 			request(app)
-// 				.get("/test")
-// 				.expect({ array: ["hey"] }, done);
-// 		});
-// });
+const postToGet = {
+	_id: "626f0e7710400b7982748888",
+	author: {
+		_id: "626f0e7610400b7982748786",
+		username: "elonmusk@tesla.com",
+		password: "teslamotors",
+		__v: 0,
+	},
+	title: "test title",
+	timestamp: "2022-05-17T19:37:15.351Z",
+	post: "test post",
+	published: true,
+	comments: [],
+	__v: 0,
+};
+
+test("posts/POST route", (done) => {
+	const setID = "626f0e7710400b7982748888";
+	request(app)
+		.post("/")
+		.set("Authorization", "Bearer " + token)
+		.type("form")
+		.send({
+			title: "test title",
+			post: "test post",
+			published: "true",
+			timestamp: postToGet.timestamp,
+			setID,
+		})
+		.then(() => {
+			request(app)
+				.get(`/${setID}`)
+				.set("Authorization", "Bearer " + token)
+				.expect("Content-Type", /json/)
+				.expect(postToGet)
+				.expect(200, done);
+		});
+});
+
+test("posts/GET/:userId/all route", (done) => {
+	const setID = "626f0e7710400b7982748888";
+	request(app)
+		.get("/")
+		.set("Authorization", "Bearer " + token)
+		.type("form")
+		.send({
+			title: "test title",
+			post: "test post",
+			published: "true",
+			timestamp: postToGet.timestamp,
+			setID,
+		})
+		.then(() => {
+			request(app)
+				.get(`/${setID}`)
+				.set("Authorization", "Bearer " + token)
+				.expect("Content-Type", /json/)
+				.expect(postToGet)
+				.expect(200, done);
+		});
+});
