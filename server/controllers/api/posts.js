@@ -175,7 +175,7 @@ export const post_put = [
 	},
 ];
 
-export const post_delete = async (req, res, next) => {
+export const post_delete = async (req, res) => {
 	const post = await Post.findById(req.params.postId).populate("comments");
 	if (post) {
 		while (post.comments.length > 0) {

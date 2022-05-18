@@ -12,6 +12,12 @@ import commentRouter from "./comments.js";
 
 const postRouter = Router();
 
+postRouter.use(
+	"/:postId/comments",
+	passport.authenticate("jwt", { session: false }),
+	commentRouter
+);
+
 // Get all posts (homepage, not authed)
 postRouter.get("/", posts_index_get);
 
@@ -19,12 +25,6 @@ postRouter.get(
 	"/:userId/all",
 	passport.authenticate("jwt", { session: false }),
 	posts_user_index_get
-);
-
-postRouter.use(
-	"/:postId/comments",
-	passport.authenticate("jwt", { session: false }),
-	commentRouter
 );
 
 postRouter.get(

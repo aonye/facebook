@@ -3,7 +3,14 @@ import request from "supertest";
 import express from "express";
 import { beforeAll, afterAll, test } from "@jest/globals";
 import { initializeMongoServer, stopServer } from "../mongoConfigTesting.js";
-import { getTokenFromUser } from "./populateUser.js";
+
+import { getTokenFromUser } from "./testHelper.js";
+import {
+	expectedAllPosts,
+	postByID,
+	postFromPOST,
+	allUserPostsAfterPOST,
+} from "./postTestResults.js";
 import { populate } from "./populateDBTesting.js";
 
 const app = express();
@@ -17,70 +24,11 @@ beforeAll(async () => {
 	initializeMongoServer();
 	await populate();
 	token = await getTokenFromUser();
-	console.log(token);
 });
 
 afterAll(async () => {
 	stopServer();
 });
-
-const expectedAllPosts = [
-	{
-		_id: "626f0e7710400b7982748790",
-		author: {
-			_id: "626f0e7610400b7982748786",
-			username: "elonmusk@tesla.com",
-			password: "teslamotors",
-			__v: 0,
-		},
-		title: "test title 1",
-		timestamp: "2000-01-01T00:00:00.000Z",
-		post: "Lorem ipsum, Lorem ipsum, Lorem ipsum",
-		published: true,
-		comments: [
-			{
-				_id: "62817209b96ad77c3f084866",
-				author: {
-					_id: "626f0e7610400b7982748787",
-					username: "aaaaaa@aaaaaa.com",
-					password: "aaaaaa",
-					__v: 0,
-				},
-				text: "Wowwwwwwwww",
-				timestamp: "2000-01-02T00:00:00.000Z",
-				__v: 0,
-			},
-			{
-				_id: "62817209b96ad77c3f084868",
-				author: {
-					_id: "626f0e7610400b7982748788",
-					username: "bbbbbb@bbbbbb.com",
-					password: "bbbbbb",
-					__v: 0,
-				},
-				text: "GreatJob",
-				timestamp: "2000-01-03T00:00:00.000Z",
-				__v: 0,
-			},
-		],
-		__v: 0,
-	},
-	{
-		_id: "626f0e7710400b7982748791",
-		author: {
-			_id: "626f0e7610400b7982748786",
-			username: "elonmusk@tesla.com",
-			password: "teslamotors",
-			__v: 0,
-		},
-		title: "test title 2",
-		timestamp: "2020-01-01T00:00:00.000Z",
-		post: "Hello world",
-		published: true,
-		comments: [],
-		__v: 0,
-	},
-];
 
 test("posts/GET all route", (done) => {
 	request(app)
@@ -90,72 +38,15 @@ test("posts/GET all route", (done) => {
 		.expect(200, done);
 });
 
-const getPostByID = {
-	_id: "626f0e7710400b7982748790",
-	author: {
-		_id: "626f0e7610400b7982748786",
-		username: "elonmusk@tesla.com",
-		password: "teslamotors",
-		__v: 0,
-	},
-	title: "test title 1",
-	timestamp: "2000-01-01T00:00:00.000Z",
-	post: "Lorem ipsum, Lorem ipsum, Lorem ipsum",
-	published: true,
-	comments: [
-		{
-			_id: "62817209b96ad77c3f084866",
-			author: {
-				_id: "626f0e7610400b7982748787",
-				username: "aaaaaa@aaaaaa.com",
-				password: "aaaaaa",
-				__v: 0,
-			},
-			text: "Wowwwwwwwww",
-			timestamp: "2000-01-02T00:00:00.000Z",
-			__v: 0,
-		},
-		{
-			_id: "62817209b96ad77c3f084868",
-			author: {
-				_id: "626f0e7610400b7982748788",
-				username: "bbbbbb@bbbbbb.com",
-				password: "bbbbbb",
-				__v: 0,
-			},
-			text: "GreatJob",
-			timestamp: "2000-01-03T00:00:00.000Z",
-			__v: 0,
-		},
-	],
-	__v: 0,
-};
-
 test("posts/GET/:postId route", (done) => {
 	const postID = "626f0e7710400b7982748790";
 	request(app)
 		.get(`/` + postID)
 		.set("Authorization", "Bearer " + token)
 		.expect("Content-Type", /json/)
-		.expect(getPostByID)
+		.expect(postByID)
 		.expect(200, done);
 });
-
-const postToGet = {
-	_id: "626f0e7710400b7982748888",
-	author: {
-		_id: "626f0e7610400b7982748786",
-		username: "elonmusk@tesla.com",
-		password: "teslamotors",
-		__v: 0,
-	},
-	title: "test title",
-	timestamp: "2022-05-17T19:37:15.351Z",
-	post: "test post",
-	published: true,
-	comments: [],
-	__v: 0,
-};
 
 test("posts/POST route", (done) => {
 	const setID = "626f0e7710400b7982748888";
@@ -167,7 +58,7 @@ test("posts/POST route", (done) => {
 			title: "test title",
 			post: "test post",
 			published: "true",
-			timestamp: postToGet.timestamp,
+			timestamp: postFromPOST.timestamp,
 			setID,
 		})
 		.then(() => {
@@ -175,30 +66,192 @@ test("posts/POST route", (done) => {
 				.get(`/${setID}`)
 				.set("Authorization", "Bearer " + token)
 				.expect("Content-Type", /json/)
-				.expect(postToGet)
+				.expect(postFromPOST)
 				.expect(200, done);
 		});
 });
 
 test("posts/GET/:userId/all route", (done) => {
-	const setID = "626f0e7710400b7982748888";
+	const userID = "626f0e7610400b7982748786";
 	request(app)
-		.get("/")
+		.get(`/${userID}/all`)
+		.set("Authorization", "Bearer " + token)
+		.expect("Content-Type", /json/)
+		.expect(allUserPostsAfterPOST)
+		.expect(200, done);
+});
+
+test("posts/GET/:userId/all route", (done) => {
+	const userID = "626f0e7610400b7982748786";
+	request(app)
+		.get(`/${userID}/all`)
+		.set("Authorization", "Bearer " + token)
+		.expect("Content-Type", /json/)
+		.expect(allUserPostsAfterPOST)
+		.expect(200, done);
+});
+
+test("posts/PUT/:postId route", (done) => {
+	const originalPost = {
+		_id: "626f0e7710400b7982748888",
+		author: {
+			_id: "626f0e7610400b7982748786",
+			username: "elonmusk@tesla.com",
+			password: "teslamotors",
+			__v: 0,
+		},
+		title: "test title",
+		timestamp: "2022-05-17T19:37:15.351Z",
+		post: "test post",
+		published: true,
+		comments: [],
+		__v: 0,
+	};
+
+	const newPost = {
+		_id: "626f0e7710400b7982748888",
+		author: {
+			_id: "626f0e7610400b7982748786",
+			username: "elonmusk@tesla.com",
+			password: "teslamotors",
+			__v: 0,
+		},
+		title: "this is not a title",
+		timestamp: "2022-05-17T19:37:15.351Z",
+		post: "this is not a post",
+		published: false,
+		comments: [],
+		__v: 0,
+	};
+
+	request(app)
+		.put(`/${originalPost._id}`)
 		.set("Authorization", "Bearer " + token)
 		.type("form")
 		.send({
-			title: "test title",
-			post: "test post",
-			published: "true",
-			timestamp: postToGet.timestamp,
-			setID,
+			title: "this is not a title",
+			post: "this is not a post",
+			published: "false",
 		})
 		.then(() => {
 			request(app)
-				.get(`/${setID}`)
+				.get(`/${originalPost._id}`)
 				.set("Authorization", "Bearer " + token)
 				.expect("Content-Type", /json/)
-				.expect(postToGet)
+				.expect(newPost)
 				.expect(200, done);
 		});
 });
+
+test("posts/PUT/:postId route", (done) => {
+	const originalPost = {
+		_id: "626f0e7710400b7982748888",
+		author: {
+			_id: "626f0e7610400b7982748786",
+			username: "elonmusk@tesla.com",
+			password: "teslamotors",
+			__v: 0,
+		},
+		title: "test title",
+		timestamp: "2022-05-17T19:37:15.351Z",
+		post: "test post",
+		published: true,
+		comments: [],
+		__v: 0,
+	};
+
+	const newPost = {
+		_id: "626f0e7710400b7982748888",
+		author: {
+			_id: "626f0e7610400b7982748786",
+			username: "elonmusk@tesla.com",
+			password: "teslamotors",
+			__v: 0,
+		},
+		title: "this is not a title",
+		timestamp: "2022-05-17T19:37:15.351Z",
+		post: "this is not a post",
+		published: false,
+		comments: [],
+		__v: 0,
+	};
+
+	request(app)
+		.put(`/${originalPost._id}`)
+		.set("Authorization", "Bearer " + token)
+		.type("form")
+		.send({
+			title: "this is not a title",
+			post: "this is not a post",
+			published: "false",
+		})
+		.then(() => {
+			request(app)
+				.get(`/${originalPost._id}`)
+				.set("Authorization", "Bearer " + token)
+				.expect("Content-Type", /json/)
+				.expect(newPost)
+				.expect(200, done);
+		});
+});
+
+test("posts/DELETE/:postId route", (done) => {
+	const post = {
+		_id: "626f0e7710400b7982748888",
+		author: {
+			_id: "626f0e7610400b7982748786",
+			username: "elonmusk@tesla.com",
+			password: "teslamotors",
+			__v: 0,
+		},
+		title: "this is not a title",
+		timestamp: "2022-05-17T19:37:15.351Z",
+		post: "this is not a post",
+		published: false,
+		comments: [],
+		__v: 0,
+	};
+
+	request(app)
+		.delete(`/${post._id}`)
+		.set("Authorization", "Bearer " + token)
+		.expect("Content-Type", /json/)
+		.expect({ msg: "Post successfully deleted" })
+		.expect(200)
+		.then(() => {
+			request(app)
+				.get(`/${post._id}`)
+				.set("Authorization", "Bearer " + token)
+				.expect("Content-Type", /json/)
+				.expect({ error: "Cannot find post" })
+				.expect(400, done);
+		});
+});
+
+// postRouter.put(
+// 	"/:postId",
+// 	passport.authenticate("jwt", { session: false }),
+// 	post_put
+// );
+
+// // empty comments
+// test("posts/GET/:postId/comments route", (done) => {
+// 	const postID = postFromPOST._id;
+// 	request(app)
+// 		.get(`/${postID}/comments`)
+// 		.set("Authorization", "Bearer " + token)
+// 		.expect("Content-Type", /json/)
+// 		.expect([])
+// 		.expect(200, done);
+// });
+
+// // comments available
+// test("posts/GET/:postId/comments route", (done) => {
+// 	const postID = postByID._id;
+// 	request(app)
+// 		.get(`/${postID}/comments`)
+// 		.set("Authorization", "Bearer " + token)
+// 		.expect("Content-Type", /json/)
+// 		.expect(postByID.comments)
+// 		.expect(200, done);
+// });
