@@ -3,10 +3,10 @@ import { MongoMemoryServer } from "mongodb-memory-server";
 
 const mongoServer = await MongoMemoryServer.create();
 
-function initializeMongoServer() {
+async function initializeMongoServer() {
 	const mongoUri = mongoServer.getUri();
 
-	mongoose.connect(mongoUri);
+	await mongoose.connect(mongoUri);
 
 	mongoose.connection.on("error", (e) => {
 		if (e.message.code === "ETIMEDOUT") {
@@ -17,11 +17,11 @@ function initializeMongoServer() {
 	});
 
 	mongoose.connection.once("open", () => {
-		console.log(`MongoDB successfully connected to ${mongoUri}`);
+		return console.log(`MongoDB successfully connected to ${mongoUri}`);
 	});
 }
 
-function stopServer() {
-	mongoServer.stop();
+async function stopServer() {
+	await mongoServer.stop();
 }
 export { initializeMongoServer, stopServer };
