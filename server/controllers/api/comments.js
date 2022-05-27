@@ -4,7 +4,13 @@ import Post from "../../models/post.js";
 import User from "../../models/user.js";
 
 export const post_comments_index_get = async (req, res) => {
-	const post = await Post.findById(req.params.postId).populate("comments");
+	const post = await Post.findById(req.params.postId).populate({
+		path: "comments",
+		populate: {
+			path: "author",
+			model: "User",
+		},
+	});
 	return post
 		? res.json(post.comments)
 		: res.status(404).json({ error: "Post not found" });

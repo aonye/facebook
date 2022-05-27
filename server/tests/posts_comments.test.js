@@ -1,17 +1,11 @@
 import { beforeAll, afterAll, describe } from "@jest/globals";
 import { initializeMongoServer, stopServer } from "../mongoConfigTesting.js";
-import { postTests } from "./posts.js";
 import { populate } from "./populateDBTesting.js";
 
-import postRouter from "../routes/api/posts.js";
-import express from "express";
+import { postTests } from "./posts.js";
+import { commentTests } from "./comments.js";
 
-const app = express();
-
-app.use(express.urlencoded({ extended: false }));
-app.use("/", postRouter);
-
-describe("PostTests", () => {
+describe("PostCommentsTests", () => {
 	beforeAll(async () => {
 		await initializeMongoServer();
 		await populate();
@@ -20,4 +14,5 @@ describe("PostTests", () => {
 		await stopServer();
 	});
 	postTests();
+	commentTests();
 });

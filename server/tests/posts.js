@@ -1,4 +1,5 @@
 import postRouter from "../routes/api/posts.js";
+import commentRouter from "../routes/api/comments.js";
 import express from "express";
 import request from "supertest";
 import { beforeAll, describe, test } from "@jest/globals";
@@ -9,6 +10,7 @@ const app = express();
 
 app.use(express.urlencoded({ extended: false }));
 app.use("/", postRouter);
+app.use("/:postId/comments", commentRouter);
 
 export const postTests = () =>
 	describe("posts route", () => {
