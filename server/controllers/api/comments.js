@@ -2,6 +2,7 @@ import { body, validationResult } from "express-validator";
 import Comment from "../../models/comment.js";
 import Post from "../../models/post.js";
 import User from "../../models/user.js";
+import { getUserIDFromJWT } from "./UserHelper.js";
 
 export const post_comments_index_get = async (req, res) => {
 	const post = await Post.findById(req.params.postId).populate({
@@ -54,6 +55,14 @@ export const comment_post = [
 			timestamp: new Date(),
 		});
 
+		if (req.body.commentId) {
+			comment._id = req.body.commentId;
+		}
+
+		if (req.body.timestamp) {
+			comment.timestamp = req.body.timestamp;
+		}
+
 		const post = await Post.findById(req.params.postId).populate(
 			"comments"
 		);
@@ -90,7 +99,10 @@ export const comment_put = [
 			return res.status(400).json(errors.array());
 		}
 
-		// validation check - author id of comment matches the user id
+		const userID = getUserIDFromJWT(req.headers.authorization);
+		if (!userID) {
+			return res.status(400).json({ msg: "No userID found" });
+		}
 
 		const comment = await Comment.findById(req.params.commentId);
 		if (comment) {
