@@ -2,8 +2,7 @@ import { body, validationResult } from "express-validator";
 import User from "../../models/user.js";
 
 export const users_index_get = async (req, res) => {
-	const users = await User.find({});
-	console.log(users);
+	const users = await User.find({}).populate("_id");
 	return users && users.length !== 0
 		? res.status(200).json(users)
 		: res.status(400).json({ error: "No users" });
@@ -59,6 +58,10 @@ export const user_post = [
 			username: req.body.username,
 			password: req.body.password,
 		});
+
+		if (req.body.id) {
+			user._id = req.body.id;
+		}
 
 		const result = user.save();
 		return result
