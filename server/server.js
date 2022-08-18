@@ -1,5 +1,5 @@
 import express from "express";
-import mongoose from "./mongoDB.js";
+// import mongoose from "./mongoDB.js";
 import passport from "./passport.js";
 import cors from "cors";
 import path from "path";

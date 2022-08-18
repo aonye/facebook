@@ -132,6 +132,19 @@ test("users/post route error with password confirmation", (done) => {
 			id: newUser._id,
 		})
 		.expect("Content-Type", /json/)
-		.expect({ msg: "User successfully added" })
+		.expect([
+			{
+				value: "44444",
+				msg: "Password must be between 6 and 30 chars",
+				param: "confirmpw",
+				location: "body",
+			},
+			{
+				value: "44444",
+				msg: "Passwords must match",
+				param: "confirmpw",
+				location: "body",
+			},
+		])
 		.expect(400, done);
 });
